@@ -21,7 +21,7 @@
     "url"  : "https://github.com/clarkparsia/stardog.js/issues" 
   },
   "dependencies"  : {
-    "request"      : "2.9.x",
+    "request"      : ">=2.9.x",
     "jsonld" : ">=0.0.1",
     "querystring" : ">=0.1.0"
   },

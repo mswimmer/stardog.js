@@ -216,6 +216,65 @@
 				fnResponseHandler	
 			);
 		};
+
+		Connection.prototype._httpRequestMultipart = function (url_path, params, filePaths, callback) {
+			var fs = require("fs");
+			var fnResponseHandler = function (error, response, body) {
+				if (!error) {
+					callback(body, response, error);
+				}
+				else {
+					console.log('Error found!');
+					console.log(error);
+				}
+			};
+
+			var reqJSON = {
+				"headers" : {
+					"Accept" : "text/plain"
+				}
+			};
+			if (this.credentials) {
+				var authHeaderVal = "Basic " + new Buffer(this.credentials.username + ":" + this.credentials.password).toString("base64");
+
+				reqJSON["headers"]["Authorization"] = authHeaderVal;
+			}
+
+			// console.log(params);
+			// console.log(filePaths);
+			// console.log(this.endpoint + url_path);
+
+			var req = request.post(this.endpoint + url_path, reqJSON, fnResponseHandler);
+			var formParams = req.form();
+
+			formParams.append("root", JSON.stringify(params));
+
+			var filepath = "";
+			if (filePaths && filePaths !== null) {
+				if (filePaths instanceof Array) {
+					for (var i=0; i < filePaths.length; i++) {
+						filepath = filePaths[i].replace(/^.*[\\\/]/, '');
+						formParams.append(filepath, fs.createReadStream(filePaths[i], { flags: 'r',
+							  encoding: 'utf8'
+							})
+						);
+					}
+				}
+				else {
+					filepath = filePaths.replace(/^.*[\\\/]/, '');
+					formParams.append(filepath, fs.createReadStream(filePaths, { flags: 'r',
+							  encoding: 'utf8'
+							})
+					);
+
+					console.log("Attachment name: "+ filepath);
+					console.log("File Path: "+ filePaths);
+				}
+			}
+
+
+			// console.log("FormParams Headers: "+ JSON.stringify(formParams));
+		};
 	}
 	else {
 		// Browser implementation using jQuery's AJAX
@@ -554,6 +613,21 @@
 
 	Connection.prototype.listDBs = function (callback) {
 		this._httpRequest("GET", "admin/databases", "application/json", "", callback);
+	};
+
+	// ----------------
+	// Create a new DB (POST)
+	// ----------------
+
+	Connection.prototype.createDB = function(name, optionsConf, filesConf, callback, filePaths) {
+		// build root JSON object with configuration of the new db.
+		var dbConfig = {
+			"dbname" : name,
+			"options" : optionsConf,
+			"files" : filesConf
+		};
+
+		this._httpRequestMultipart("admin/databases", dbConfig, filePaths, callback);
 	};
 
 	// ----------------
