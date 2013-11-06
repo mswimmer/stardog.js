@@ -113,7 +113,7 @@
     // referenced in [Stardog Network documentation](http://stardog.com/docs/network/).
 	var Connection = Stardog.Connection = function ()	{ 
 		// By default (for testing)
-		this.endpoint = 'http://localhost:5820/nodeDB/';
+		this.endpoint = 'http://localhost:5820/';
 	};
 
     // Set the Stardog HTTP endpoint, usually running in port `5820`.
